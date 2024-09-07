@@ -8,6 +8,7 @@
 
     <string name="temp_control_mode">에너지 절약 실내 온도 조절 모드</string>
     <string name="window_control_mode">창 투명도만 조절 밝기만 조절 모드</string>
+    <string name="auto_only_window">자동 밝기 조절 모드</string>
 
     //activity_temp_control
     <string name="put_temp">목표 온도를 입력하세요</string>

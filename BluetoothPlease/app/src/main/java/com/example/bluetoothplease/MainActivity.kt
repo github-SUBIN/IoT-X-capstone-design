@@ -89,6 +89,7 @@ class MainActivity : ComponentActivity() {
         // Initialize the buttons here
         val btnTempControl: Button = findViewById(R.id.btnTempControl)
         val btnWindowControl: Button = findViewById(R.id.btnWindowControl)
+        val btnAutoControl: Button = findViewById(R.id.btnAutoControl)
 
         // Set the listener for temp control
         btnTempControl.setOnClickListener {
@@ -99,6 +100,12 @@ class MainActivity : ComponentActivity() {
         // Set the listener for window control (explanation below)
         btnWindowControl.setOnClickListener {
             val intent = Intent(this, WindowControlActivity::class.java)
+            startActivity(intent)
+        }
+
+        // Set the listener for auto control
+        btnAutoControl.setOnClickListener {
+            val intent = Intent(this, AutoControlActivity::class.java)
             startActivity(intent)
         }
 
@@ -204,6 +211,7 @@ class MainActivity : ComponentActivity() {
                 findViewById<TextView>(R.id.tvWlecomeWel).visibility = View.VISIBLE
                 findViewById<Button>(R.id.btnTempControl).visibility = View.VISIBLE
                 findViewById<Button>(R.id.btnWindowControl).visibility = View.VISIBLE
+                findViewById<Button>(R.id.btnAutoControl).visibility = View.VISIBLE
 
 
                 textStatus.visibility = View.GONE

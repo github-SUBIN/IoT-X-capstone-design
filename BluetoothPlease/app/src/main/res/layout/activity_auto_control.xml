@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:gravity="center">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="야외 밝기에 따라 자동으로 밝기를 조절하는 기능입니다."
+        android:textSize="18sp"
+        android:paddingBottom="16dp"/>
+
+    <Button
+        android:id="@+id/autoStart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="자동 밝기 조절 시작" />
+
+    <Button
+        android:id="@+id/autoEnd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="자동 밝기 조절 끝"/>
+
+</LinearLayout>

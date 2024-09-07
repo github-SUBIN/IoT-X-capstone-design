@@ -35,6 +35,7 @@
 
         <activity android:name=".TempControlActivity" />
         <activity android:name=".WindowControlActivity" />
+        <activity android:name=".AutoControlActivity"/>
 
     </application>
 
