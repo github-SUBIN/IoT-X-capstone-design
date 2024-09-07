@@ -4,6 +4,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#0696B4"
     android:padding="16dp">
 
     <!-- Bluetooth Connection Section -->
@@ -11,30 +12,45 @@
         android:id="@+id/text_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textFontWeight="4000"
+        android:textColor="#1B262C"
         android:text="Status"
         android:textSize="20dp"
         android:textStyle="bold"
+        android:layout_marginBottom="13dp"
         android:layout_gravity="center"/>
 
     <Button
         android:id="@+id/btn_paired"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
+        android:background="@drawable/round_button"
+        android:layout_marginBottom="10dp"
+        android:textColor="#1B262C"
         android:text="Paired Devices"
+        android:textStyle="bold"
         android:layout_gravity="center"/>
 
     <Button
         android:id="@+id/btn_search"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
+        android:background="@drawable/round_button"
+        android:layout_marginBottom="10dp"
+        android:textColor="#1B262C"
         android:text="Search"
+        android:textStyle="bold"
         android:layout_gravity="center"/>
 
     <Button
         android:id="@+id/btn_send"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
+        android:background="@drawable/round_button"
+        android:layout_marginBottom="10dp"
+        android:textColor="#1B262C"
         android:text="Send"
+        android:textStyle="bold"
         android:layout_gravity="center"/>
 
     <ListView
@@ -49,7 +65,11 @@
         android:id="@+id/tvWelcome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textSize="34dp"
         android:textStyle="bold"
+        android:textFontWeight="6000"
+        android:layout_marginTop="120dp"
+        android:textColor="#1B262C"
         android:text="@string/welcome"
         android:layout_gravity="center"
         android:visibility="gone"/>
@@ -59,14 +79,31 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textStyle="bold"
+        android:textFontWeight="6000"
+        android:layout_marginBottom="20dp"
+        android:textColor="#1B262C"
         android:text="@string/wlecomewel"
         android:layout_gravity="center"
+        android:visibility="gone"/>
+
+    <ImageView
+        android:id="@+id/homeSecond"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:layout_gravity="center"
+        android:layout_marginBottom="40dp"
+        android:background="@drawable/home_second"
         android:visibility="gone"/>
 
     <Button
         android:id="@+id/btnTempControl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@drawable/round_button_second"
+        android:layout_marginBottom="10dp"
+        android:textFontWeight="9000"
+        android:textColor="#1B262C"
+        android:fontFamily="@font/nanumsquareroundr"
         android:text="@string/temp_control_mode"
         android:layout_gravity="center"
         android:visibility="gone"/>
@@ -75,6 +112,11 @@
         android:id="@+id/btnWindowControl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@drawable/round_button_second"
+        android:layout_marginBottom="10dp"
+        android:textFontWeight="9000"
+        android:textColor="#1B262C"
+        android:fontFamily="@font/nanumsquareroundr"
         android:text="@string/window_control_mode"
         android:layout_gravity="center"
         android:visibility="gone"/>
@@ -83,6 +125,11 @@
         android:id="@+id/btnAutoControl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@drawable/round_button_second"
+        android:layout_marginBottom="10dp"
+        android:textFontWeight="9000"
+        android:textColor="#1B262C"
+        android:fontFamily="@font/nanumsquareroundr"
         android:text="@string/auto_only_window"
         android:layout_gravity="center"
         android:visibility="gone"/>

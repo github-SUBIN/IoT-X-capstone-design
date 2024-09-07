@@ -21,6 +21,7 @@ import androidx.core.app.ActivityCompat
 import android.content.pm.PackageManager
 import android.util.Log
 import android.view.View
+import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import java.io.IOException
 import java.io.InputStream
@@ -209,6 +210,7 @@ class MainActivity : ComponentActivity() {
                 //숨겨둔 홈 스크린 보이게 하기
                 findViewById<TextView>(R.id.tvWelcome).visibility = View.VISIBLE
                 findViewById<TextView>(R.id.tvWlecomeWel).visibility = View.VISIBLE
+                findViewById<ImageView>(R.id.homeSecond).visibility = View.VISIBLE
                 findViewById<Button>(R.id.btnTempControl).visibility = View.VISIBLE
                 findViewById<Button>(R.id.btnWindowControl).visibility = View.VISIBLE
                 findViewById<Button>(R.id.btnAutoControl).visibility = View.VISIBLE
