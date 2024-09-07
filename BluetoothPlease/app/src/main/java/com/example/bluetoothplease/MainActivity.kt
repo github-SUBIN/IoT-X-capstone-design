@@ -1,0 +1,320 @@
+package com.example.bluetoothplease
+
+import android.Manifest
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothSocket
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.Bundle
+import android.os.SystemClock
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.ListView
+import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.ComponentActivity
+import androidx.core.app.ActivityCompat
+import android.content.pm.PackageManager
+import android.util.Log
+import android.view.View
+import androidx.core.content.ContextCompat
+import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
+import java.util.UUID
+
+class MainActivity : ComponentActivity() {
+    //var connectedThread: ConnectedThread? = null // connectedThread를 전역 변수로 선언
+
+    private lateinit var btAdapter: BluetoothAdapter
+    private val enableBtLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { /* Handle result if needed */ }
+
+
+
+    private lateinit var textStatus: TextView
+    private lateinit var btnPaired: Button
+    private lateinit var btnSearch: Button
+    private lateinit var btnSend: Button
+    private lateinit var listView: ListView
+
+    private lateinit var pairedDevices: Set<BluetoothDevice>
+    private lateinit var btArrayAdapter: ArrayAdapter<String>
+    private val deviceAddressArray: ArrayList<String> = ArrayList()
+
+    companion object {
+        var connectedThread: ConnectedThread? = null
+        val MY_UUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+    }
+
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val action = intent.action
+            if (BluetoothDevice.ACTION_FOUND == action) {
+                val device = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
+                val deviceName = device?.name ?: "Unknown Device"
+                val deviceHardwareAddress = device?.address ?: "Unknown Address"
+                btArrayAdapter.add(deviceName)
+                deviceAddressArray.add(deviceHardwareAddress)
+                btArrayAdapter.notifyDataSetChanged()
+            }
+        }
+    }
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        textStatus = findViewById(R.id.text_status)
+        btnPaired = findViewById(R.id.btn_paired)
+        btnSearch = findViewById(R.id.btn_search)
+        btnSend = findViewById(R.id.btn_send)
+        listView = findViewById(R.id.listview)
+
+        btArrayAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1)
+        listView.adapter = btArrayAdapter
+
+
+
+
+
+
+
+        // Initialize the buttons here
+        val btnTempControl: Button = findViewById(R.id.btnTempControl)
+        val btnWindowControl: Button = findViewById(R.id.btnWindowControl)
+
+        // Set the listener for temp control
+        btnTempControl.setOnClickListener {
+            val intent = Intent(this, TempControlActivity::class.java)
+            startActivity(intent)
+        }
+
+        // Set the listener for window control (explanation below)
+        btnWindowControl.setOnClickListener {
+            val intent = Intent(this, WindowControlActivity::class.java)
+            startActivity(intent)
+        }
+
+
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), 1)
+            }
+        }
+
+
+
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            val permissionList = arrayOf(
+                Manifest.permission.BLUETOOTH_CONNECT,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+            ActivityCompat.requestPermissions(this, permissionList, 1)
+        } else {
+            val permissionList = arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+            ActivityCompat.requestPermissions(this, permissionList, 1)
+        }
+
+        @Suppress("DEPRECATION")
+        btAdapter = BluetoothAdapter.getDefaultAdapter()
+        if (!btAdapter.isEnabled) {
+            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            enableBtLauncher.launch(enableBtIntent)
+        }
+
+        btnPaired.setOnClickListener {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED
+            ) {
+                textStatus.setText(R.string.bluetooth_permission_not_granted)
+                return@setOnClickListener
+            }
+            btArrayAdapter.clear()
+            deviceAddressArray.clear()
+            pairedDevices = btAdapter.bondedDevices
+            if (pairedDevices.isNotEmpty()) {
+                for (device in pairedDevices) {
+                    val deviceName = device.name
+                    val deviceHardwareAddress = device.address
+                    btArrayAdapter.add(deviceName)
+                    deviceAddressArray.add(deviceHardwareAddress)
+                }
+            }
+        }
+
+
+        btnSearch.setOnClickListener {
+            if (btAdapter.isDiscovering) {
+                btAdapter.cancelDiscovery()
+            } else {
+                if (btAdapter.isEnabled) {
+                    btAdapter.startDiscovery()
+                    btArrayAdapter.clear()
+                    deviceAddressArray.clear()
+                    val filter = IntentFilter(BluetoothDevice.ACTION_FOUND)
+                    registerReceiver(receiver, filter)
+                } else {
+                    Toast.makeText(applicationContext, "Bluetooth is not on", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        btnSend.setOnClickListener {
+            connectedThread?.write("a")
+        }
+
+
+        listView.setOnItemClickListener { _, _, position, _ ->
+            Toast.makeText(applicationContext, btArrayAdapter.getItem(position), Toast.LENGTH_SHORT).show()
+            textStatus.text = "Connecting..."
+
+            val name = btArrayAdapter.getItem(position) ?: "Unknown Device"
+            val address = deviceAddressArray[position]
+            //var flag = true
+            var isConnected = false
+
+            val device = btAdapter.getRemoteDevice(address)
+
+            try {
+                val btSocket = createBluetoothSocket(device)
+                btSocket.connect()
+
+                val connectedThread = ConnectedThread(btSocket)
+                connectedThread.start()
+                MainActivity.connectedThread = connectedThread // 전역 변수에 할당
+
+                Log.d("MainActivity", "Connected successfully")
+                textStatus.text = "connected to $name"
+
+                //숨겨둔 홈 스크린 보이게 하기
+                findViewById<TextView>(R.id.tvWelcome).visibility = View.VISIBLE
+                findViewById<TextView>(R.id.tvWlecomeWel).visibility = View.VISIBLE
+                findViewById<Button>(R.id.btnTempControl).visibility = View.VISIBLE
+                findViewById<Button>(R.id.btnWindowControl).visibility = View.VISIBLE
+
+
+                textStatus.visibility = View.GONE
+                btnPaired.visibility = View.GONE
+                btnSearch.visibility = View.GONE
+                listView.visibility = View.GONE
+                btnSend.visibility = View.GONE
+
+
+
+                isConnected = true
+
+            } catch (e: IOException) {
+                //flag = false
+                Log.e("MainActivity", "Connection failed", e)
+                textStatus.text = "connection failed!"
+                //e.printStackTrace()
+            }
+
+            if (!isConnected) {
+                textStatus.text = "connection failed!"
+            }
+
+
+        }
+
+        /*
+        // Set up the send button
+        btnSend.setOnClickListener {
+            connectedThread?.write("a")
+        }
+        */
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(receiver)
+    }
+
+
+    // Inner class to handle Bluetooth communication
+    inner class ConnectedThread(private val mmSocket: BluetoothSocket) : Thread() {
+        private val mmInStream: InputStream? = mmSocket.inputStream
+        private val mmOutStream: OutputStream? = mmSocket.outputStream
+
+        override fun run() {
+            /*
+            val buffer = ByteArray(1024)
+            while (true) {
+                try {
+                    val availableBytes = mmInStream?.available() ?: 0
+                    if (availableBytes > 0) {
+                        SystemClock.sleep(100)
+                        val readBytes = mmInStream?.read(buffer, 0, availableBytes) ?: 0
+                        val receivedData = String(buffer, 0, readBytes)
+                        Log.d("ConnectedThread", "Received: $receivedData")
+                        // Process the read data here
+                    }
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                    break
+                }
+            }
+            */
+            val buffer = ByteArray(1024)
+            var bytes: Int
+            while (true) {
+                try {
+                    bytes = mmInStream?.read(buffer) ?: 0
+                    if (bytes > 0) {
+                        val receivedData = String(buffer, 0, bytes)
+                        Log.d("ConnectedThread", "Received: $receivedData")
+                        // Process the read data here
+                    }
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                    break
+                }
+            }
+        }
+
+        fun write(input: String) {
+            val bytes = input.toByteArray()
+            try {
+                mmOutStream?.write(bytes)
+                Log.d("ConnectedThread", "Sent: $input")
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+
+        fun cancel() {
+            try {
+                mmSocket.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    // Dummy method to simulate socket creation
+    private fun createBluetoothSocket(device: BluetoothDevice): BluetoothSocket {
+        // Replace with your actual Bluetooth socket creation logic
+        return device.createRfcommSocketToServiceRecord(MY_UUID)
+    }
+
+    /*
+    companion object {
+        private val MY_UUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+    }
+    */
+
+}
