@@ -1,0 +1,132 @@
+MainActivity 이거 뭐지 그냥 위에 주석처리해뒀던거 좀 예전거임
+
+package com.example.arduinoappmake
+
+import android.Manifest
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothSocket
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Bundle
+import android.widget.Button
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import java.io.IOException
+import java.util.UUID
+import android.util.Log
+
+// 전역 변수로 블루투스 소켓 정의
+var bluetoothSocket: BluetoothSocket? = null
+private const val REQUEST_ENABLE_BT = 1
+private const val bluetoothPermissionRequestCode = 1  // 요청 코드 상수
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var enableBtLauncher: ActivityResultLauncher<Intent>
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        // Bluetooth 활성화 요청을 위한 ActivityResultLauncher 초기화
+        enableBtLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                connectToBluetoothDevice()
+            } else {
+                Log.e("Bluetooth", "블루투스 활성화 실패")
+            }
+        }
+
+        // Enable Bluetooth
+        val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        val bluetoothAdapter = bluetoothManager.adapter
+        if (bluetoothAdapter == null) {
+            Log.e("Bluetooth", "BluetoothAdapter를 사용할 수 없습니다.")
+            return
+        }
+        if (!bluetoothAdapter.isEnabled) {
+            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            enableBtLauncher.launch(enableBtIntent)
+        } else {
+            connectToBluetoothDevice()
+        }
+
+        // 권한 요청
+        val requiredPermissions = mutableListOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            requiredPermissions.add(Manifest.permission.BLUETOOTH_CONNECT)
+        }
+
+        val missingPermissions = requiredPermissions.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+
+        if (missingPermissions.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, missingPermissions.toTypedArray(), bluetoothPermissionRequestCode)
+        } else {
+            connectToBluetoothDevice()
+        }
+
+        // 버튼 클릭 이벤트 설정
+        val tempControlButton = findViewById<Button>(R.id.btnTempControl)
+        val windowControlButton = findViewById<Button>(R.id.btnWindowControl)
+
+        tempControlButton.setOnClickListener {
+            val intent = Intent(this, TempControlActivity::class.java)
+            startActivity(intent)
+        }
+
+        windowControlButton.setOnClickListener {
+            val intent = Intent(this, WindowControlActivity::class.java)
+            startActivity(intent)
+        }
+    }
+
+    // 블루투스 연결 함수
+    private fun connectToBluetoothDevice() {
+        try {
+            val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+            val bluetoothAdapter = bluetoothManager.adapter
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED ||
+                android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) {
+                val device: BluetoothDevice? = bluetoothAdapter.getRemoteDevice("98:DA:40:02:E2:9C") // 블루투스 모듈의 MAC 주소
+                val uuid: UUID = device?.uuids?.get(0)?.uuid ?: UUID.randomUUID()
+
+                bluetoothSocket = device?.createRfcommSocketToServiceRecord(uuid)
+                bluetoothSocket?.connect()
+
+                if (bluetoothSocket?.isConnected == true) {
+                    Log.d("Bluetooth", "블루투스 연결 성공") // 로그 출력
+                } else {
+                    Log.e("Bluetooth", "블루투스 연결 실패") // 로그 출력
+                }
+            }
+        } catch (e: SecurityException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+    // 권한 요청 결과 처리
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == bluetoothPermissionRequestCode) {
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                connectToBluetoothDevice()
+            } else {
+                Log.e("Permissions", "권한이 거부되었습니다.")
+            }
+        }
+    }
+}

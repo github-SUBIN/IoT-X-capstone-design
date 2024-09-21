@@ -1,0 +1,108 @@
+새로운 프로젝트 - 블루투스 통신부터 하는거
+어플실행 야무지게 확인한 첫번째거
+import android.Manifest
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Bundle
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.ListView
+import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.ComponentActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+
+
+class MainActivity : ComponentActivity() {
+
+    private lateinit var btAdapter: BluetoothAdapter
+
+    // ActivityResultLauncher 선언
+    private val enableBtLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()) { _ ->
+        // Bluetooth 활성화 후 처리할 로직 (사용되지 않으므로 파라미터를 '_'로 대체)
+    }
+
+    private lateinit var textStatus: TextView
+    private lateinit var btnPaired: Button
+    private lateinit var btnSearch: Button
+    private lateinit var btnSend: Button
+    private lateinit var listView: ListView
+
+    private lateinit var pairedDevices: Set<BluetoothDevice>
+    private lateinit var btArrayAdapter: ArrayAdapter<String>
+    private val deviceAddressArray: ArrayList<String> = ArrayList()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main) // 레이아웃 설정
+
+        // findViewById로 뷰 연결
+        textStatus = findViewById(R.id.text_status)
+        btnPaired = findViewById(R.id.btn_paired)
+        btnSearch = findViewById(R.id.btn_search)
+        btnSend = findViewById(R.id.btn_send)
+        listView = findViewById(R.id.listview)
+
+        // ArrayAdapter 초기화
+        btArrayAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1)
+        listView.adapter = btArrayAdapter
+
+        // Android 12 이상 권한 처리
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            val permissionList = arrayOf(
+                Manifest.permission.BLUETOOTH_CONNECT,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+            ActivityCompat.requestPermissions(this, permissionList, 1)
+        } else {
+            val permissionList = arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+            ActivityCompat.requestPermissions(this, permissionList, 1)
+        }
+
+        // BluetoothAdapter 가져오기 (경고 무시)
+        @Suppress("DEPRECATION")
+        btAdapter = BluetoothAdapter.getDefaultAdapter()
+
+        if (!btAdapter.isEnabled) {
+            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            enableBtLauncher.launch(enableBtIntent) // startActivityForResult 대신 사용
+        }
+
+        // 페어링된 기기 목록을 가져오는 버튼 클릭 이벤트
+        btnPaired.setOnClickListener {
+            // 권한 체크 추가
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                // 권한이 없으면 실행 중지
+                textStatus.setText(R.string.bluetooth_permission_not_granted)
+                return@setOnClickListener
+            }
+
+            // 리스트 초기화
+            btArrayAdapter.clear()
+            if (deviceAddressArray.isNotEmpty()) {
+                deviceAddressArray.clear()
+            }
+
+            // 페어링된 기기 목록 가져오기
+            pairedDevices = btAdapter.bondedDevices
+            if (pairedDevices.isNotEmpty()) {
+                // 페어링된 기기가 있는 경우
+                for (device in pairedDevices) {
+                    val deviceName = device.name
+                    val deviceHardwareAddress = device.address // MAC 주소
+                    btArrayAdapter.add(deviceName) // 장치 이름을 어댑터에 추가
+                    deviceAddressArray.add(deviceHardwareAddress) // 장치 주소를 리스트에 추가
+                }
+            }
+        }
+    }
+}

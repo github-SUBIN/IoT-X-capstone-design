@@ -1,0 +1,35 @@
+원래 스마트 홈 홈화면
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:text="@string/welcome"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:text="@string/wlecomewel"/>
+
+    <Button
+        android:id="@+id/btnTempControl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/temp_control_mode" />
+
+    <Button
+        android:id="@+id/btnWindowControl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/window_control_mode" />
+</LinearLayout>

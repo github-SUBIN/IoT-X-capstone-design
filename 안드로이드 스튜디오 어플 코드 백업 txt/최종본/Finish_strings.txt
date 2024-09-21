@@ -1,0 +1,27 @@
+strings 새벽 5시 최종
+
+<resources>
+    <string name="app_name">BluetoothPlease</string>
+    <string name="bluetooth_permission_not_granted">Bluetooth connect permission not granted</string>
+
+
+    <string name="welcome">Smart Home</string>
+    <string name="wlecomewel">Temperature Control System</string>
+
+    <string name="temp_control_mode">에너지 절약 실내 온도 조절 모드</string>
+    <string name="window_control_mode">창 투명도만 조절 밝기만 조절 모드</string>
+
+    //activity_temp_control
+    <string name="put_temp">목표 온도를 입력하세요</string>
+    <string name="put_ex">온도 (예: 24)</string>
+    <string name="ok">확인</string>
+
+    //activity_window_control
+    <string name="choose_window">창의 투명도를 선택하세요</string>
+    <string name="percent0">0%</string>
+    <string name="percent20">20%</string>
+    <string name="percent40">40%</string>
+    <string name="percent60">60%</string>
+    <string name="percent80">80%</string>
+    <string name="percent100">100%</string>
+</resources>
